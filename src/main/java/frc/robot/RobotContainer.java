@@ -25,7 +25,7 @@ public class RobotContainer extends RainstormContainer {
 
     @Override
     protected void configureButtonBindings() {
-        new Trigger(controller::getAButton).whileTrue(demoSubsystem.getRunCommand(() -> 1d));
+        new Trigger(controller::getAButton).whileTrue(demoSubsystem.getStartEndCommand(() -> 1d));
     }
 
     @Override
