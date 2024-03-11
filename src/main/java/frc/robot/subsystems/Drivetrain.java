@@ -14,8 +14,7 @@ import frc.robot.Constants.DemoConstants;
 import frc.robot.Constants.RobotMap;
 
 public class Drivetrain extends DemoSubsystemBase implements DemoDrivetrain {
-    
-    /* Generic MotorController */
+
     private TalonFX leftMotor;
     private TalonFX rightMotor;
 
