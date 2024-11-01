@@ -5,20 +5,20 @@
 package frc.robot;
 
 public final class Constants {
-    public static class OperatorConstants {
-        public static final int CONTROLLER_PORT = 0;
-    }
+
+    public static final int CONTROLLER_PORT = 0;
 
     public static class RobotMap {
-        public static final int DRIVE_LEFT = 0;
-        public static final int DRIVE_RIGHT = 1;
 
-        public static final int GENERIC_SUB = 2;
-    }
+        public static final int RSL = 0;
+        
+        public static final int CANDLE = 5;
 
-    public static class DemoConstants {
-        public static final double DRIVETRAIN_SPEED = 0.5;
-
-        public static final double GENERIC_SUB_SPEED = 1d;
+        public static class DIO {
+            public static final int GREEN_BUTTON = 0;
+            public static final int YELLOW_BUTTON = 1;
+            public static final int RED_BUTTON = 2;
+            public static final int SMALL_GREEN_BUTTON = 3;
+        }
     }
 }

@@ -5,19 +5,44 @@
 package frc.robot;
 
 import frc.rainstorm.RainstormContainer;
-import frc.rainstorm.command.ArcadeDrive;
-import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.GenericDemo;
+import frc.rainstorm.shuffleboard.LightningShuffleboard;
+import frc.robot.commands.EnableRobot;
+import frc.robot.commands.ledprograms.MotorCollectionLED;
+import frc.robot.commands.ledprograms.Pulse;
+import frc.robot.subsystems.ButtonControl;
+import frc.robot.subsystems.CSMGeneric;
+import frc.robot.subsystems.MotorCollection;
+import frc.robot.subsystems.TalonGeneric;
+import frc.robot.subsystems.led.LEDProgramConstruct;
+import frc.robot.subsystems.led.RGBConstruct;
+import frc.robot.subsystems.led.LED;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer extends RainstormContainer {
 
-    private final Drivetrain drivetrain = new Drivetrain();
-    private final GenericDemo demoSubsystem = new GenericDemo();
+    private final LED led = new LED();
+    private final ButtonControl buttons = new ButtonControl();
+
+    private final MotorCollection motorCollection = new MotorCollection(new TalonGeneric[] {
+            new TalonGeneric(0), new TalonGeneric(2), new TalonGeneric(3)
+        }, new CSMGeneric[] {
+            new CSMGeneric(4)
+    });
+
+    private final DSSim dsSim = new DSSim();
 
     public RobotContainer() {
-        super(new XboxController(Constants.OperatorConstants.CONTROLLER_PORT));
+        super();
+
+        input.addXbox(new XboxController(Constants.CONTROLLER_PORT));
+
+        DriverStation.silenceJoystickConnectionWarning(true);
+
+        led.setDefaultProgram(new Pulse(RGBConstruct.CYAN).withPulseSpeed(2d));
 
         configureButtonBindings();
         configureDefaultCommands();
@@ -25,12 +50,42 @@ public class RobotContainer extends RainstormContainer {
 
     @Override
     protected void configureButtonBindings() {
-        new Trigger(controller::getAButton).whileTrue(demoSubsystem.getRunCommand(() -> 1d));
+        dsSim.init();
+
+        LightningShuffleboard.setBoolSupplier("ButtonControl", "DS Enabled", () -> DriverStation.isEnabled());
+        // LightningShuffleboard.setBoolSupplier("ButtonControl", "DS Attached", () -> DriverStation.isDSAttached());
+        // LightningShuffleboard.setBoolSupplier("ButtonControl", "Fake DS Connected", dsSim::isFakeDS);
+
+        // Disable Button (Y)
+        new Trigger(() -> buttons.getGreenTop() || buttons.getYellowOnly()).onTrue(dsSim.disableCmd());
+
+        // Enable Button (G + Y)
+        new Trigger(buttons::getYellowAndGreen).whileTrue(
+                new EnableRobot(dsSim, led, buttons).alongWith(motorCollection.stopCmd()).ignoringDisable(true));
+
+        // Motor Negative (R)
+        new Trigger(buttons::getRedOnly).whileTrue(new RunCommand(() -> motorCollection.setPower(
+                        motorCollection.getPower() - 0.04 < -1d ? -1d : motorCollection.getPower() - 0.04),
+                        motorCollection));
+
+        // Motor Positive (G)
+        new Trigger(buttons::getGreenOnly).whileTrue(new RunCommand(() -> motorCollection.setPower(
+                        motorCollection.getPower() + 0.04 > 1d ? 1d : motorCollection.getPower() + 0.04),
+                        motorCollection));
+
+        // Motor Stop (R + G)
+        new Trigger(buttons::getRedAndGreen).whileTrue(motorCollection.stopCmd());
+
+        // LED States for Motors
+        new Trigger(() -> DriverStation.isEnabled()).onTrue(led.set(new MotorCollectionLED(motorCollection)));
     }
 
     @Override
     protected void configureDefaultCommands() {
-        drivetrain.setDefaultCommand(
-                new ArcadeDrive(drivetrain, () -> controller.getLeftY(), () -> controller.getRightX()));
     }
+
+    public void setLEDProgram(LEDProgramConstruct program) {
+        led.setProgram(program);
+    }
+
 }
