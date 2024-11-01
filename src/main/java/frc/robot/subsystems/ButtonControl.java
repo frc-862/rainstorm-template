@@ -60,8 +60,15 @@ public class ButtonControl extends SubsystemBase {
         return buttonsEnabled;
     }
 
-    public void setEnableState(boolean state) {
-        buttonsEnabled = state;
+    public void setAllLow() {
+        red.setOverrideState(ButtonOverrideState.OVERRIDE_LOW);
+        yellow.setOverrideState(ButtonOverrideState.OVERRIDE_LOW);
+        green.setOverrideState(ButtonOverrideState.OVERRIDE_LOW);
+        greenTop.setOverrideState(ButtonOverrideState.OVERRIDE_LOW);
+    }
+
+    public void setLock(boolean lockEnabled) {
+        buttonsEnabled = !lockEnabled;
 
         if (buttonsEnabled) {
             red.setOverrideState(ButtonOverrideState.NORMAL);

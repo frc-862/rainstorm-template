@@ -46,7 +46,8 @@ public class EnableRobot extends Command {
         readyToEnable = true;
         hasEnabled = true;
 
-        // buttons.setEnableState(false);
+        buttons.setAllLow();
+        buttons.setLock(false);
     }
 
     @Override
@@ -59,6 +60,7 @@ public class EnableRobot extends Command {
             if (!DriverStation.isEnabled()) {
                 led.set(new Solid(RGBConstruct.RED)).schedule();
             }
+            buttons.setLock(true);
         }).schedule();
     }
 
